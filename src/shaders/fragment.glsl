@@ -9,11 +9,28 @@ uniform float u_speed;
 uniform float u_time;
 uniform int u_color;
 
-float drawCoord(float coord, float fill, float gap) {
-    float patternLength = fill + gap;
-    float modulo = mod(coord, patternLength);
+// todo:
+// Уменьшить яркость дальних слоев
+// задать функцию рандомных углов снега (параметризовать снег)
+// переписать линейное движение снега на синусоидальное
+// убрать задвоение сверху
+// установить параметры плотности и размерности снега (параметризовать random)
 
-    return step(modulo, patternLength - gap);
+float random (vec2 st) {
+    return fract(sin(dot(st.xy,
+                         vec2(12.9898,78.233)))*
+        10000.5453123);
+}
+
+float todraw (vec2 coord, float xShift, float yShift) {
+    mat2 rotationMatrix = mat2(
+        cos(u_angle), -sin(u_angle),
+        sin(u_angle), cos(u_angle)
+    );
+    vec2 shifted = vec2(coord.x + xShift, coord.y + yShift);
+    vec2 rotatedFragCoord = rotationMatrix * shifted;
+
+    return random(rotatedFragCoord);
 }
 
 vec3 getColor(int color) {
@@ -24,23 +41,18 @@ vec3 getColor(int color) {
     return vec3(red / 255.0, green / 255.0, blue / 255.0);
 }
 
+
+
 void main() {
-    mat2 rotationMatrix = mat2(
-        cos(u_angle), -sin(u_angle),
-        sin(u_angle), cos(u_angle)
-    );
+    float d = todraw(gl_FragCoord.xy, u_time * u_speed, u_time * u_speed);
 
-    vec2 rotatedFragCoord = rotationMatrix * gl_FragCoord.xy;
+    d *= todraw(gl_FragCoord.xy, -u_time * u_speed, u_time * u_speed);
+    d *= todraw(gl_FragCoord.xy, -u_time * u_speed, u_time * u_speed);
+    d *= todraw(gl_FragCoord.xy, -u_time * u_speed * 0.5, -u_time * u_speed*.00000001);
 
-    float yShift = u_time * u_speed;
-    float drawX = drawCoord(rotatedFragCoord.x, u_width, u_spacing);
-    float drawY = drawCoord(rotatedFragCoord.y + yShift, u_length, u_interval);
+    if (bool(d)) discard;
 
-    float draw = drawX * drawY;
-
-    if (!bool(draw)) discard;
-
-    vec3 color = getColor(u_color);
+    vec3 color =  getColor(u_color);
 
     gl_FragColor = vec4(color, 1.0);
 }
