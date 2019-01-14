@@ -9,50 +9,53 @@ uniform float u_speed;
 uniform float u_time;
 uniform int u_color;
 
-// todo:
-// Уменьшить яркость дальних слоев
-// задать функцию рандомных углов снега (параметризовать снег)
-// переписать линейное движение снега на синусоидальное
-// убрать задвоение сверху
-// установить параметры плотности и размерности снега (параметризовать random)
-
-float random (vec2 st) {
-    return fract(sin(dot(st.xy,
-                         vec2(12.9898,78.233)))*
-        10000.5453123);
+/*
+	The same old random function with a different signature.
+*/
+vec2 rand(vec2 co){
+    return vec2(
+        fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453),
+        fract(cos(dot(co.yx ,vec2(8.64947,45.097))) * 43758.5453)
+    )*2.0-1.0;
 }
 
-float todraw (vec2 coord, float xShift, float yShift) {
-    mat2 rotationMatrix = mat2(
-        cos(u_angle), -sin(u_angle),
-        sin(u_angle), cos(u_angle)
-    );
-    vec2 shifted = vec2(coord.x + xShift, coord.y + yShift);
-    vec2 rotatedFragCoord = rotationMatrix * shifted;
+/*
+	Dot distance field.
+*/
+float dots(vec2 uv, float scale) {
+    // Consider the integer component of the UV coordinate
+    // to be an ID of a local coordinate space.
+    vec2 g = floor(uv);
+	// "What 'local coordinate space'?" you say? Why the one
+    // implicitly defined by the fractional component of
+    // the UV coordinate. Here we translate the origin to the
+    // center.
+    vec2 f = fract(uv)*8.0-2.0;
 
-    return random(rotatedFragCoord);
+    // Get a random value based on the "ID" of the coordinate
+    // system. This value is invariant across the entire region.
+    vec2 r = rand(g)/* * scale*/;
+
+    // Return the distance to that point.
+    return length(f+r);
 }
-
-vec3 getColor(int color) {
-    float red = float(color / 256 / 256);
-    float green = float(color / 256 - int(red * 256.0));
-    float blue = float(color - int(red * 256.0 * 256.0) - int(green * 256.0));
-
-    return vec3(red / 255.0, green / 255.0, blue / 255.0);
-}
-
-
 
 void main() {
-    float d = todraw(gl_FragCoord.xy, u_time * u_speed, u_time * u_speed);
+    float d;
+    float scale = 1.;
+    float xShift = u_time * u_speed;
+    float yShift = u_time * u_speed * 2.0;
+    vec2 uv = gl_FragCoord.xy;
 
-    d *= todraw(gl_FragCoord.xy, -u_time * u_speed, u_time * u_speed);
-    d *= todraw(gl_FragCoord.xy, -u_time * u_speed, u_time * u_speed);
-    d *= todraw(gl_FragCoord.xy, -u_time * u_speed * 0.5, -u_time * u_speed*.00000001);
+    // uv /= 10.0;
 
-    if (bool(d)) discard;
+    // d = draw(uv, xShift, yShift, scale);
 
-    vec3 color =  getColor(u_color);
+    // vec2 shifted = vec2(uv.x + xShift, uv.y + yShift);
+    float color;
+        color = smoothstep(0.1, 0.5, dots(vec2(uv.x, uv.y + yShift)*0.9,0.9));
+	    // color *= smoothstep(0.1, 0.5, dots(vec2(uv.x + xShift, uv.y + yShift)*0.8,0.8));
+	    color *= smoothstep(0.1, 0.5, dots(vec2(uv.x -xShift, uv.y + yShift)*0.01,0.01));
 
-    gl_FragColor = vec4(color, 1.0);
+	gl_FragColor = vec4(1.0 - color);
 }

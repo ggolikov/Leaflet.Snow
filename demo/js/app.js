@@ -1,5 +1,5 @@
 import '../../src/L.Rain';
-import { points } from './points';
+// import { points } from './points';
 
 $('#colorpicker').colorpicker();
 
@@ -28,6 +28,15 @@ var osm = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y
         speed:      +speedController.value,          // times
         color:      rgb2hex(colorpickerController.value)
     },
+    points = [
+        [
+            [35, -5],
+            [60, -5],
+            [60, 25],
+            [35, 25],
+            [35, -5]
+        ]
+    ];
     rain = L.rain(points, options).addTo(lmap);
 
 angleController.addEventListener('change', function (e) {
