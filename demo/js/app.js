@@ -18,6 +18,8 @@ var osm = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y
     lengthController      = document.querySelector('.length-controller'),
     intervalController    = document.querySelector('.interval-controller'),
     speedController       = document.querySelector('.speed-controller'),
+    densityController     = document.querySelector('.density-controller'),
+    sizeController        = document.querySelector('.size-controller'),
 
     options = {
         angle:      +angleController.value,          // deg
@@ -26,6 +28,8 @@ var osm = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y
         length:     +lengthController.value,        // px
         interval:   +intervalController.value,    // px
         speed:      +speedController.value,          // times
+        density:    +densityController.value,          // times
+        size:       +sizeController.value,          // times
         color:      rgb2hex(colorpickerController.value)
     },
     points = [
@@ -36,7 +40,7 @@ var osm = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y
             [35, 25],
             [35, -5]
         ]
-    ];
+    ],
     rain = L.rain(points, options).addTo(lmap);
 
 angleController.addEventListener('change', function (e) {
@@ -67,6 +71,16 @@ intervalController.addEventListener('change', function (e) {
 speedController.addEventListener('change', function (e) {
     var speed = Number(e.target.value);
     rain.setSpeed(speed);
+});
+
+densityController.addEventListener('change', function (e) {
+    var density = Number(e.target.value);
+    rain.setDensity(density);
+});
+
+sizeController.addEventListener('change', function (e) {
+    var size = Number(e.target.value);
+    rain.setSize(size);
 });
 
 $('#colorpicker').on('colorpickerChange', e => {

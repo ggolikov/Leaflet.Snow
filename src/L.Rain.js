@@ -159,6 +159,24 @@ L.Rain = L.Polygon.extend({
         this._redraw();
     },
 
+    setDensity: function (density) {
+        var gl = this._gl,
+            densityLocation = gl.getUniformLocation(this.shaderProgram, "u_density");
+
+        this.options.density = density;
+        gl.uniform1f(densityLocation, density);
+        this._redraw();
+    },
+
+    setSize: function (size) {
+        var gl = this._gl,
+            sizeLocation = gl.getUniformLocation(this.shaderProgram, "u_size");
+
+        this.options.size = size;
+        gl.uniform1f(sizeLocation, size);
+        this._redraw();
+    },
+
     setColor: function (color) {
         var gl = this._gl,
             colorLocation = gl.getUniformLocation(this.shaderProgram, "u_color");
@@ -188,7 +206,7 @@ L.Rain = L.Polygon.extend({
     },
 
     _initShaders: function (gl) {
-        var { vertexShader, fragmentShader, angle, width, spacing, length, interval, speed, color } = this.options,
+        var { vertexShader, fragmentShader, angle, width, spacing, length, interval, speed, color, density, size } = this.options,
             vShader = this._getShader("vertex", vertexShader),
             fShader = this._getShader("fragment", fragmentShader),
             shaderProgram = this.shaderProgram = gl.createProgram();
@@ -214,6 +232,8 @@ L.Rain = L.Polygon.extend({
             lengthLocation   = gl.getUniformLocation(shaderProgram, "u_length"),
             intervalLocation = gl.getUniformLocation(shaderProgram, "u_interval"),
             speedLocation    = gl.getUniformLocation(shaderProgram, "u_speed"),
+            densityLocation  = gl.getUniformLocation(shaderProgram, "u_density"),
+            sizeLocation     = gl.getUniformLocation(shaderProgram, "u_size"),
             colorLocation    = gl.getUniformLocation(shaderProgram, "u_color");
 
         // угол дождя
@@ -223,6 +243,8 @@ L.Rain = L.Polygon.extend({
         gl.uniform1f(lengthLocation, length);
         gl.uniform1f(intervalLocation, interval);
         gl.uniform1f(speedLocation, speed);
+        gl.uniform1f(densityLocation, density);
+        gl.uniform1f(sizeLocation, size);
 
         if (color[0] === '#') {
             this.options.color = color.replace('#', '0x');
