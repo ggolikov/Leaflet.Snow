@@ -159,6 +159,15 @@ L.Rain = L.Polygon.extend({
         this._redraw();
     },
 
+    setLayersCount: function (layersCount) {
+        var gl = this._gl,
+            layersCountLocation = gl.getUniformLocation(this.shaderProgram, "u_layersCount");
+
+        this.options.layersCount = layersCount;
+        gl.uniform1f(layersCountLocation, layersCount);
+        this._redraw();
+    },
+
     setDensity: function (density) {
         var gl = this._gl,
             densityLocation = gl.getUniformLocation(this.shaderProgram, "u_density");
@@ -206,7 +215,7 @@ L.Rain = L.Polygon.extend({
     },
 
     _initShaders: function (gl) {
-        var { vertexShader, fragmentShader, angle, width, spacing, length, interval, speed, color, density, size } = this.options,
+        var { vertexShader, fragmentShader, angle, width, spacing, length, interval, speed, color, layersCount, density, size } = this.options,
             vShader = this._getShader("vertex", vertexShader),
             fShader = this._getShader("fragment", fragmentShader),
             shaderProgram = this.shaderProgram = gl.createProgram();
@@ -229,9 +238,9 @@ L.Rain = L.Polygon.extend({
             spacingLocation  = gl.getUniformLocation(shaderProgram, "u_spacing"),
             widthLocation    = gl.getUniformLocation(shaderProgram, "u_width"),
             lengthLocation   = gl.getUniformLocation(shaderProgram, "u_legnth"),
-            lengthLocation   = gl.getUniformLocation(shaderProgram, "u_length"),
             intervalLocation = gl.getUniformLocation(shaderProgram, "u_interval"),
             speedLocation    = gl.getUniformLocation(shaderProgram, "u_speed"),
+            layersCountLocation  = gl.getUniformLocation(shaderProgram, "u_layersCount"),
             densityLocation  = gl.getUniformLocation(shaderProgram, "u_density"),
             sizeLocation     = gl.getUniformLocation(shaderProgram, "u_size"),
             colorLocation    = gl.getUniformLocation(shaderProgram, "u_color");
@@ -243,6 +252,7 @@ L.Rain = L.Polygon.extend({
         gl.uniform1f(lengthLocation, length);
         gl.uniform1f(intervalLocation, interval);
         gl.uniform1f(speedLocation, speed);
+        gl.uniform1f(layersCountLocation, layersCount);
         gl.uniform1f(densityLocation, density);
         gl.uniform1f(sizeLocation, size);
 
