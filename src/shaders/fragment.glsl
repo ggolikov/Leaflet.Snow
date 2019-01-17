@@ -27,6 +27,8 @@ uniform int u_color;
 // скорости затухают от нижнего слоя к верхнему (чем крупнее снежинки в слое, тем ниже скорость)
 // const vec4 speedAttenuation = vec4(1.0, 0.8, 0.6, 0.4, 0.2);
 const float PI = 3.14159265359;
+const float MAX_DENSITY = 5.0;
+const float MAX_SPEED = 5.0;
 
 float rand1d(float x) {
     return fract(sin(x)*1000000.0);
@@ -36,34 +38,7 @@ vec2 rand(vec2 uv) {
     return vec2(
         fract(sin(dot(uv.xy ,vec2(12.9898,78.233))) * 43758.5453),
         fract(cos(dot(uv.yx ,vec2(8.64947,45.097))) * 43758.5453)
-    )*2.0-1.0;
-}
-
-/*
-	Dot distance field.
-*/
-float dots(vec2 uv, float density) {
-    // px
-    // uv в пикселях
-    // Consider the integer component of the UV coordinate
-// to be an ID of a local coordinate space.
-    vec2 g = floor(uv);
-    // приводим к ПО
-    // "What 'local coordinate space'?" you say? Why the one
-// implicitly defined by the fractional component of
-// the UV coordinate. Here we translate the origin to the
-// center.
-    vec2 f = fract(uv)*2.0-1.0;
-    // приводим к ПО
-    // Get a random value based on the "ID" of the coordinate
-// system. This value is invariant across the entire region.
-    vec2 r = rand(g)/**0.5*/;
-
-    // разреженность - не работает + непонятно, в чем мерять
-    // if (length(mod(r, 5.0)) > density) return 1.0;
-
-    // Return the distance(от 0,0) to that point. (в координатах ПО)
-    return length(f+r);
+    );
 }
 
 vec2 rotate(vec2 uv, float angle) {
@@ -75,108 +50,110 @@ vec2 rotate(vec2 uv, float angle) {
     return rotationMatrix * uv;
 }
 
-// a пушистость
-// b пушистость
-// uv координаты
-// angle поворот слоя
-// shift ф-ция движения
-// density плотность снежинок в слое
-// size размер снежинок
+// minSize
+// maxSize
+// minDensity?
+// maxDensity?
 
-float _color(float a, float b, vec2 uv, float angle, vec2 shift, float scale, float density) {
-    vec2 _uv = uv/u_resolution;
-    float _size = mix(-1.0, 1.0, u_size / u_resolution.x);
-    a = _size*0.5;
-    b = _size*1.0;
-    mat2 scaleMatrix = mat2(
-        u_size, 0.0,
-        0.0, u_size
-    );
-    // uv *= u_size;
-    // return smoothstep(a, b, dots(vec2(rotate(uv, angle)+shift)*scale, density));
-    return smoothstep(a, b, dots(uv*0.001, density));
-}
+vec2 shift(float speedCoef) {
+    float xShift = (u_time * u_speed * speedCoef)/ u_resolution.x;
+    float yShift = (u_time * u_speed * speedCoef) / u_resolution.y;
 
-vec2 getShift(float speedCoef) {
-    float xShift = (u_time * u_speed * speedCoef);
-    float yShift = (u_time * u_speed * speedCoef);
 
-    float i = floor(xShift);  // integer
-    float f = fract(xShift);  // fraction
+    return vec2(xShift, sin(yShift/50.0)*20.0);
+    // return vec2(xShift, 0.0);
+    // return vec2(0.0);
 
-    // return vec2(xShift, sin(yShift/50.0)*20.0);
-    return vec2(0.0);
+    // float i = floor(xShift);  // integer
+    // float f = fract(xShift);  // fraction
     // return vec2(xShift, mix(rand1d(i), rand1d(i + 1.0), smoothstep(0.,1.,f)));
 }
 
-float drawCircle(vec2 st, vec2 uv, float radius){
-    // vec2 l = uv-vec2(0.5);
-    // vec2 l = fract(gl_FragCoord.xy)-vec2(0.5);
-    vec2 l = (rand(st))-uv;
-    // vec2 l = rand(uv)*2.0 - 1.0 - vec2(0.5);
-    // if (l.y > 0.0) discard;
-    // return 1.0 - smoothstep(radius-radius*0.5,radius+radius*0.5, length(l));
-    // dot(l,l) == length(l)
-    return 1.0 - step(radius, length(l));
+float drawCircle(vec2 uv, float angle, float scale, float sizeScale) {
+    float density = u_density * scale;
+    // умножим размер на 2, чтобы был зазор между точками
+    float doubleSize = u_size * sizeScale * 2.0;
+    // разобъем пространство на doubleSize частей
+    vec2 splitCount = u_resolution / vec2(doubleSize);
+    uv *= splitCount;
+
+    uv = rotate(uv, angle) + shift(scale);
+    // radius в долях целого
+    float radius = 0.25;
+    // выделим целую и частную фракции от координат
+    vec2 integerCoord = floor(uv);
+    vec2 fractionalCoord = fract(uv);
+    // randomCoord располагается в промежутке от 0.0 до sqrt(2.0)
+    vec2 randomCoord = rand(integerCoord);
+    // в зависимости от плотности удаляем снег
+    float minRadius = density * sqrt(2.0) / MAX_DENSITY;
+    if (length(randomCoord) > minRadius) return 0.0;
+
+    // радиус равен 0,25, чтобы очертить круг вокруг точки 0.5,0.5
+    // но само положение центр должно быть в пределах от 0,25 до 0,75 * размытие
+    // размытие
+    float smoothCoeff = 0.5;
+    float smoothRadius = radius * (1.0 + smoothCoeff);
+    vec2 normalizedRandomCoord = mix(vec2(smoothRadius), vec2(1.0 - smoothRadius), randomCoord);
+
+    // при l = fractionalCoord центр находится в точке 0,0
+    // при l = fractionalCoord -vec2(0.5); центр смещается в середину квадрата
+    // при l = fractionalCoord - randomCoord; центр смещается произвольную точку. И это смещение одинаково для текущего uv! Это называется псевдослучайная величина
+    vec2 l = fractionalCoord - normalizedRandomCoord;
+
+    return 1.0 - smoothstep(radius*(1.0 - smoothCoeff),radius*(1.0 + smoothCoeff), length(l));
 }
 
+// Скорость затухает с каждым верхним слоем
 float getspeedCoeff(float layerIndex) {
-    return (6.0 - layerIndex) / 5.0;
+    return (MAX_SPEED + 1.0 - layerIndex) / MAX_SPEED;
 }
 
 void main() {
-    vec2 uv = gl_FragCoord.xy;
-    vec2 _uv = uv/u_resolution;
-    // if (dots(_uv, 1.0)*u_size > u_size) discard;
-
-    // float _size = u_size / length(u_resolution);
-    // float _size = u_size / u_resolution.x;
+    vec2 uv = gl_FragCoord.xy/u_resolution;
     float _size = mix(0.0, 1.0, u_size / length(u_resolution));
-
-    // if (_size < 0.00111) discard;
 
     float angle = PI / 4.0;
 
     // каждый слой *= -0.2 к скорости
     // каждый слой *= -0.2 к плотности
+    // каждый слой *= +0.2 к размеру
 
     float speedCoeff = getspeedCoeff(u_layersCount);
 
-
-    // float color = _color(_size, _size*1.5, uv, PI/2.0, getShift(1.0), 1.0, u_density * 1.0); - красивый эффект добавления точек
-    float color = _color(_size, _size*1.5, _uv, PI/2.0, getShift(1.0), u_size, u_density * 1.0);
+    float scale = 1.0;
+    float sizeScale = 1.0/u_layersCount;
+    float color = drawCircle(uv, PI/2.0, scale, sizeScale);
 
     if (u_layersCount >= 2.0) {
-        color *= _color(0.1, 0.3, uv, PI/6.0, getShift(0.8), 0.08, u_density * 0.8);
+        sizeScale = 2.0/u_layersCount;
+        scale = 0.8;
+        color += drawCircle(uv, PI/6.0, scale, sizeScale);
     }
 
     if (u_layersCount >= 3.0) {
-        color *= _color(0.1, 0.5, uv, PI/1.2, getShift(0.6), 0.05, u_density * 0.6);
+        sizeScale = 3.0/u_layersCount;
+        scale = 0.6;
+        color += drawCircle(uv, PI/1.2, scale, sizeScale);
     }
 
     if (u_layersCount >= 4.0) {
-        color *= _color(0.1, 0.6, uv, PI,     getShift(0.4), 0.045, u_density * 0.4);
+        sizeScale = 4.0/u_layersCount;
+        scale = 0.4;
+        color += drawCircle(uv, PI, scale, sizeScale);
     }
 
     if (u_layersCount >= 5.0) {
-        color *= _color(0.1, 0.6, uv, PI*1.5,     getShift(0.2), 0.03, u_density* 0.2);
+        sizeScale = 5.0/u_layersCount;
+        scale = 0.2;
+        color += drawCircle(uv, PI*1.5, scale, sizeScale);
     }
 
-	// gl_FragColor = vec4(1.0 - color);
-    float splitCount = (u_resolution.y/ (u_size*2.0));
-    _uv *= (splitCount);
+    // костыль
+    if (color < 0.1) discard;
+    vec3 _color = vec3(color);
+    // _color += vec3(uv, 0.7);
+    color += (uv, 0.7);
 
-    vec2 g = floor(_uv);
-    _uv = fract(_uv);
-    vec3 _color;
-    _color = vec3(_uv.x, _uv.y, 0.0);
-    _color = vec3(drawCircle(g,_uv,splitCount));
-
-    vec4 _co;
-    // _co = vec4(_uv,1.0, 1.0);
-    _co += vec4(drawCircle(g,_uv,0.25));
-    gl_FragColor = _co;
-    // gl_FragColor = vec4(drawCircle(_uv,0.25));
-	// gl_FragColor = vec4(_uv,1.0, 1.0);
-    // gl_FragColor = vec4(vec3(color),1.0);
+    gl_FragColor = vec4(_color, 1.0);
 }
