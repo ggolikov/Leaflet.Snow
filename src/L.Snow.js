@@ -5,7 +5,7 @@ var glsl = require('glslify');
 var vertexShader = glsl('./shaders/vertex.glsl');
 var fragmentShader = glsl('./shaders/fragment.glsl');
 
-L.Rain = L.Polygon.extend({
+L.Snow = L.Polygon.extend({
     options: {
         angle: 80,
         width: 1,
@@ -113,43 +113,6 @@ L.Rain = L.Polygon.extend({
         gl.uniform1f(angleLocation, rad);
         this._redraw();
     },
-
-    setWidth: function (width) {
-        var gl = this._gl,
-            widthLocation = gl.getUniformLocation(this.shaderProgram, "u_width");
-
-        this.options.width = width;
-        gl.uniform1f(widthLocation, width);
-        this._redraw();
-    },
-
-    setSpacing: function (spacing) {
-        var gl = this._gl,
-            spacingLocation = gl.getUniformLocation(this.shaderProgram, "u_spacing");
-
-        this.options.spacing = spacing;
-        gl.uniform1f(spacingLocation, spacing);
-        this._redraw();
-    },
-
-    setLength: function (length) {
-        var gl = this._gl,
-            lengthLocation = gl.getUniformLocation(this.shaderProgram, "u_length");
-
-        this.options.length = length;
-        gl.uniform1f(lengthLocation, length);
-        this._redraw();
-    },
-
-    setInterval: function (interval) {
-        var gl = this._gl,
-            intervalLocation = gl.getUniformLocation(this.shaderProgram, "u_interval");
-
-        this.options.interval = interval;
-        gl.uniform1f(intervalLocation, interval);
-        this._redraw();
-    },
-
     setSpeed: function (speed) {
         var gl = this._gl,
             speedLocation = gl.getUniformLocation(this.shaderProgram, "u_speed");
@@ -376,6 +339,6 @@ L.Rain = L.Polygon.extend({
     }
 });
 
-L.rain = (latlngs, options) => {
-    return new L.Rain(latlngs, options);
+L.snow = (latlngs, options) => {
+    return new L.Snow(latlngs, options);
 };

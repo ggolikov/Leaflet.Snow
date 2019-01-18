@@ -92,7 +92,7 @@ float drawCircle(vec2 uv, float angle, float scale, float sizeScale) {
     // радиус равен 0,25, чтобы очертить круг вокруг точки 0.5,0.5
     // но само положение центр должно быть в пределах от 0,25 до 0,75 * размытие
     // размытие
-    float smoothCoeff = 0.5;
+    float smoothCoeff = 1.3;
     float smoothRadius = radius * (1.0 + smoothCoeff);
     vec2 normalizedRandomCoord = mix(vec2(smoothRadius), vec2(1.0 - smoothRadius), randomCoord);
 
@@ -102,6 +102,7 @@ float drawCircle(vec2 uv, float angle, float scale, float sizeScale) {
     vec2 l = fractionalCoord - normalizedRandomCoord;
 
     return 1.0 - smoothstep(radius*(1.0 - smoothCoeff),radius*(1.0 + smoothCoeff), length(l));
+    // return 1.0 - smoothstep(radius*(1.0),radius*(10.0), length(l));
 }
 
 // Скорость затухает с каждым верхним слоем
@@ -122,35 +123,35 @@ void main() {
     float speedCoeff = getspeedCoeff(u_layersCount);
 
     float scale = 1.0;
-    float sizeScale = 1.0/u_layersCount;
-    float color = drawCircle(uv, PI/2.0, scale, sizeScale);
+    float sizeScale = 1.0 / u_layersCount;
+    float color = drawCircle(uv, PI * 3.0/8.0, scale, sizeScale);
 
     if (u_layersCount >= 2.0) {
-        sizeScale = 2.0/u_layersCount;
+        sizeScale = 2.0 / u_layersCount;
         scale = 0.8;
-        color += drawCircle(uv, PI/6.0, scale, sizeScale);
+        color += drawCircle(uv, PI * 5.0/8.0, scale, sizeScale);
     }
 
     if (u_layersCount >= 3.0) {
-        sizeScale = 3.0/u_layersCount;
+        sizeScale = 3.0 / u_layersCount;
         scale = 0.6;
-        color += drawCircle(uv, PI/1.2, scale, sizeScale);
+        color += drawCircle(uv, PI * 1.0/8.0, scale, sizeScale);
     }
 
     if (u_layersCount >= 4.0) {
-        sizeScale = 4.0/u_layersCount;
+        sizeScale = 4.0 / u_layersCount;
         scale = 0.4;
-        color += drawCircle(uv, PI, scale, sizeScale);
+        color += drawCircle(uv, PI * 7.0/8.0, scale, sizeScale);
     }
 
     if (u_layersCount >= 5.0) {
-        sizeScale = 5.0/u_layersCount;
+        sizeScale = 5.0 / u_layersCount;
         scale = 0.2;
-        color += drawCircle(uv, PI*1.5, scale, sizeScale);
+        color += drawCircle(uv, PI*PI * 4.0/8.0, scale, sizeScale);
     }
 
     // костыль
-    if (color < 0.1) discard;
+    // if (color < 0.1) discard;
     vec3 _color = vec3(color);
     // _color += vec3(uv, 0.7);
     color += (uv, 0.7);
