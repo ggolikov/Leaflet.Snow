@@ -12,19 +12,18 @@ var osm = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y
 
     root                  = document.querySelector('#content'),
     colorpickerController = document.querySelector('#colorpicker input'),
-    angleController       = document.querySelector('.angle-controller'),
     speedController       = document.querySelector('.speed-controller'),
     layersCountController     = document.querySelector('.layersCount-controller'),
     densityController     = document.querySelector('.density-controller'),
     sizeController        = document.querySelector('.size-controller'),
 
     options = {
-        angle:          +angleController.value,          // deg
         speed:          +speedController.value,          // times
         layersCount:    +layersCountController.value,          // times
         density:        +densityController.value,          // times
         size:           +sizeController.value,          // times
-        color:          rgb2hex(colorpickerController.value)
+        color:          rgb2hex(colorpickerController.value),
+        opacity: 0.5
     },
     points = [
         [
@@ -36,11 +35,7 @@ var osm = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y
         ]
     ],
     snow = L.snow(points, options).addTo(lmap);
-
-angleController.addEventListener('change', function (e) {
-    var angle = Number(e.target.value);
-    snow.setAngle(angle);
-});
+    window.snow = snow;
 
 speedController.addEventListener('change', function (e) {
     var speed = Number(e.target.value);
@@ -63,9 +58,11 @@ sizeController.addEventListener('change', function (e) {
 });
 
 $('#colorpicker').on('colorpickerChange', e => {
-    var color = e.color.toHexString();
+    var color = e.color.toHexString(),
+        opacity = e.color.alpha;
 
     snow.setColor(color);
+    snow.setOpacity(opacity);
 });
 
 function rgb2hex(rgb) {

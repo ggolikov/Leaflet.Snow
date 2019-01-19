@@ -7,13 +7,12 @@ var fragmentShader = glsl('./shaders/fragment.glsl');
 
 L.Snow = L.Polygon.extend({
     options: {
-        angle: 80,
-        width: 1,
-        spacing: 10,
-        length: 4,
-        interval: 10,
         speed: 1,
+        layersCount: 1,
+        density: 1,
+        size: 10,
         color: 'Oxa6b3e9',
+        opacity: 1,
         vertexShader: vertexShader,
         fragmentShader: fragmentShader
     },
@@ -104,15 +103,6 @@ L.Snow = L.Polygon.extend({
         this.drawScene();
     },
 
-    setAngle: function (angle) {
-        var gl = this._gl,
-            angleLocation = gl.getUniformLocation(this.shaderProgram, "u_angle"),
-            rad = angle * Math.PI / 180 - Math.PI / 2.0;
-
-        this.options.angle = angle;
-        gl.uniform1f(angleLocation, rad);
-        this._redraw();
-    },
     setSpeed: function (speed) {
         var gl = this._gl,
             speedLocation = gl.getUniformLocation(this.shaderProgram, "u_speed");
@@ -160,6 +150,15 @@ L.Snow = L.Polygon.extend({
         }
     },
 
+    setOpacity: function (opacity) {
+        var gl = this._gl,
+            opacityLocation = gl.getUniformLocation(this.shaderProgram, "u_opacity");
+
+        this.options.opacity = opacity;
+        gl.uniform1f(opacityLocation, opacity);
+        this._redraw();
+    },
+
     _initCanvas: function () {
         var canvas = L.DomUtil.create('canvas', 'webgl-canvas leaflet-layer');
 
@@ -178,7 +177,7 @@ L.Snow = L.Polygon.extend({
     },
 
     _initShaders: function (gl) {
-        var { vertexShader, fragmentShader, angle, width, spacing, length, interval, speed, color, layersCount, density, size } = this.options,
+        var { vertexShader, fragmentShader, speed, layersCount, density, size, color, opacity } = this.options,
             vShader = this._getShader("vertex", vertexShader),
             fShader = this._getShader("fragment", fragmentShader),
             shaderProgram = this.shaderProgram = gl.createProgram();
@@ -197,23 +196,14 @@ L.Snow = L.Polygon.extend({
         gl.enable(gl.BLEND);
         gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
 
-        var angleLocation    = gl.getUniformLocation(shaderProgram, "u_angle"),
-            spacingLocation  = gl.getUniformLocation(shaderProgram, "u_spacing"),
-            widthLocation    = gl.getUniformLocation(shaderProgram, "u_width"),
-            lengthLocation   = gl.getUniformLocation(shaderProgram, "u_legnth"),
-            intervalLocation = gl.getUniformLocation(shaderProgram, "u_interval"),
-            speedLocation    = gl.getUniformLocation(shaderProgram, "u_speed"),
+        var speedLocation    = gl.getUniformLocation(shaderProgram, "u_speed"),
             layersCountLocation  = gl.getUniformLocation(shaderProgram, "u_layersCount"),
             densityLocation  = gl.getUniformLocation(shaderProgram, "u_density"),
             sizeLocation     = gl.getUniformLocation(shaderProgram, "u_size"),
-            colorLocation    = gl.getUniformLocation(shaderProgram, "u_color");
+            colorLocation    = gl.getUniformLocation(shaderProgram, "u_color"),
+            opacityLocation    = gl.getUniformLocation(shaderProgram, "u_opacity");
 
         // угол дождя
-        gl.uniform1f(angleLocation, angle * Math.PI / 180 - Math.PI / 2.0);
-        gl.uniform1f(widthLocation, width);
-        gl.uniform1f(spacingLocation, spacing);
-        gl.uniform1f(lengthLocation, length);
-        gl.uniform1f(intervalLocation, interval);
         gl.uniform1f(speedLocation, speed);
         gl.uniform1f(layersCountLocation, layersCount);
         gl.uniform1f(densityLocation, density);
@@ -224,6 +214,7 @@ L.Snow = L.Polygon.extend({
         }
 
         gl.uniform1i(colorLocation, this.options.color);
+        gl.uniform1f(opacityLocation, opacity);
 
         this.render();
     },

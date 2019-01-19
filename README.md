@@ -1,8 +1,8 @@
-# Leaflet.Rain
+# Leaflet.Snow
 
 WebGL rain animation for Leaflet maps. Extends L.Polygon.
 
-## [Demo](https://ggolikov.github.io/Leaflet.Rain)
+## [Demo](https://ggolikov.github.io/Leaflet.Snow)
 
 ## Installation
 works with leaflet@1.0.0 and higher
@@ -42,13 +42,12 @@ L.rain(`LatLng[]` _latlngs_, `options` _options?_)| Create rain animation inside
 ### Options
 Option|Type|Default|Description
 ----|----|----|----
-angle|`Number`|80| Rain angle (degrees)
 width|`Number`|1| Drop width (px)
 spacing|`Number`|10| X-spacing between drops (px)
 length|`Number`|4| Drop length (px)
 interval|`Number`|10| Y-spacing between drops (px)
-speed|`Number`|1| Rain speed factor. Values greater 1 increase speed
-color|`String`|`Oxa6b3e9`| Rain color hex value
+speed|`Number`|1| Snow speed factor. Values greater 1 increase speed
+color|`String`|`Oxa6b3e9`| Snow color hex value
 
 ### Methods
 Method|Description
