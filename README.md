@@ -1,19 +1,19 @@
 # Leaflet.Snow
 
-WebGL rain animation for Leaflet maps. Extends L.Polygon.
+WebGL snow animation for Leaflet maps. Extends L.Polygon.
 
 ## [Demo](https://ggolikov.github.io/Leaflet.Snow)
 
 ## Installation
-works with leaflet@1.0.0 and higher
+works with leaflet@1.x.x
 ```
 npm install leaflet
-npm install leaflet-rain
+npm install leaflet-snow
 ```
 
 ```javascript
 import L from 'leaflet';
-import 'leaflet-rain';
+import 'leaflet-snow';
 ```
 
 ## Usage
@@ -23,41 +23,39 @@ let map = L.map(...);
 
 let points = [[latlngs], [latlngs], ...],
     options = {
-        angle: 80,
-        width: 1,
-        spacing: 10,
-        length: 4,
-        interval: 10,
-        speed: 1,
-        color: 'Oxa6b3e9'
+        speed: 100,
+        layersCount: 1,
+        density: 1,
+        size: 10,
+        color: 'Oxffffff',
+        opacity: 1
     },
-    rain = L.rain(points, options).addTo(map);
+    snow = L.snow(points, options).addTo(map);
 ```
 
 ## API reference
 ### Factory
 Factory|Description
 -------|-----------
-L.rain(`LatLng[]` _latlngs_, `options` _options?_)| Create rain animation inside (multi)polygon with given latlngs.
+L.snow(`LatLng[]` _latlngs_, `options` _options?_)| Create snow animation inside (multi)polygon with given latlngs.
 ### Options
-Option|Type|Default|Description
+Option|Type|Default|Range|Description
 ----|----|----|----
-width|`Number`|1| Drop width (px)
-spacing|`Number`|10| X-spacing between drops (px)
-length|`Number`|4| Drop length (px)
-interval|`Number`|10| Y-spacing between drops (px)
-speed|`Number`|1| Snow speed factor. Values greater 1 increase speed
-color|`String`|`Oxa6b3e9`| Snow color hex value
+speed|`Number`|50|0-Infinity|Snow speed (px/s)
+layersCount|`Number`|1|1-5| Number of snow layers. Snowflakes increase their size and decrease their density and  speed from back to top layers
+density|`Number`|1|1-5|Density coefficient of bottom snow layer
+size|`Number`|10|1- Infinity |Snowflake size (px) at front layer
+color|`String`|`Oxa6b3e9`| |Snow color hex value
+opacity|`Number`|1|0-1|Snow opacity
 
 ### Methods
 Method|Description
 ------|-------
-setAngle(`Number`)|Sets rain angle (degrees).
-setWidth(`Number`)|Sets drop width (px).
-setSpacing(`Number`)|Sets x-spacing between drops (px).
-setLength(`Number`)|Sets drop length (px).
-setInterval(`Number`)|Sets y-spacing between drops (px).
-setSpeed(`Number`)|Sets rain speed factor.
-setColor(`hex string`)|Sets rain color.
+setSpeed(`Number`)|Sets snow speed (px/s)
+setLayersCount(`Number`)|Sets snow layers count (1-5)
+setDensity(`Number`)|Sets snow back layer density (1-5)
+setSize(`Number`)|Sets snowflake size at front layer (px)
+setColor(`hex string`)|Sets snow color
+setOpacity(`Number`)|Sets snow opacity (0-1)
 
 ## [License](https://opensource.org/licenses/MIT)
