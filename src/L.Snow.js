@@ -7,11 +7,11 @@ var fragmentShader = glsl('./shaders/fragment.glsl');
 
 L.Snow = L.Polygon.extend({
     options: {
-        speed: 1,
+        speed: 50,
         layersCount: 1,
         density: 1,
         size: 10,
-        color: 'Oxa6b3e9',
+        color: 'Oxffffff',
         opacity: 1,
         vertexShader: vertexShader,
         fragmentShader: fragmentShader

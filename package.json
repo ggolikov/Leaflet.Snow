@@ -1,6 +1,6 @@
 {
   "name": "leaflet-snow",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "WebGL snow animation for Leaflet maps",
   "repository": "https://github.com/ggolikov/Leaflet.Snow",
   "main": "./src/L.Snow.js",

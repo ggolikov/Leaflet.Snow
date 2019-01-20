@@ -8,7 +8,7 @@ var osm = L.tileLayer('http://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y
         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'
     }),
     center = [48, 10],
-    lmap = new L.Map('map', {layers: [osm], center, zoom: 5, maxZoom: 22, zoomAnimation: true}),
+    lmap = new L.Map('map', {layers: [osm], center, zoom: 4, maxZoom: 22, zoomAnimation: true}),
 
     root                  = document.querySelector('#content'),
     colorpickerController = document.querySelector('#colorpicker input'),
